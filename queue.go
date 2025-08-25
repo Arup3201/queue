@@ -3,19 +3,29 @@ package queue
 type Queue struct {
 	Front int
 	Rear int
+	Max int
 	Items []int
 }
 
-func NewQueue() *Queue {
+func NewQueue(m int) *Queue {
 	return &Queue{
 		Front: -1,
 		Rear: -1, 
-		Items: []int{},
+		Max: m, 
+		Items: make([]int, m),
 	}
 }
 
 func (q *Queue) IsEmpty() bool {
 	return q.Front == -1
+}
+
+func (q *Queue) GetRear() (int, bool) {
+	if q.IsEmpty() {
+		return -1, false
+	}
+
+	return q.Items[q.Rear], true
 }
 
 func (q *Queue) Enqueue(item int) {
@@ -24,6 +34,10 @@ func (q *Queue) Enqueue(item int) {
 		q.Rear=0
 	} else {
 		q.Rear += 1
+	}
+
+	if q.Rear==q.Max {
+		panic("reached the maximum capacity of the queue")
 	}
 
 	q.Items[q.Rear] = item
