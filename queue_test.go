@@ -2,61 +2,78 @@ package queue
 
 import "testing"
 
-func TestNewQueue(t *testing.T) {
-	q := NewQueue(5)
-
-	if q.Front!=-1 || q.Rear!=-1 || len(q.Items)!=5{
-		t.Errorf("create queue failed")
-	}
-}
-
 func TestEnqueue(t *testing.T) {
-	q := NewQueue(5)
+	t.Run("enqueue rear is 10 in queue [10]", func(t *testing.T) {
+		q := MakeQueue()
 
-	q.Enqueue(10)
-	q.Enqueue(12)
-	q.Enqueue(14)
-	q.Enqueue(16)
+		q.Enqueue(10)
 
-	want := 16
-	if got, _ := q.GetRear(); got!=want {
-		t.Errorf("q.GetRear()=%d, expected %d", got, want)
-	}
-}
+		want := 10
+		if got := q.GetRear(); got != want {
+			t.Errorf("TestEnqueue expected %d, got %d", want, got)
+		}
+	})
+	t.Run("enqueue rear is 30 in queue [10, 20, 30]", func(t *testing.T) {
+		q := MakeQueue()
 
-func TestEmptyInsert(t *testing.T) {
-	q := NewQueue(5)
-	q.Enqueue(10)
+		q.Enqueue(10)
+		q.Enqueue(20)
+		q.Enqueue(30)
 
-	if q.Rear!=q.Front {
-		t.Errorf("queue front and rear should be same for the first insert")
-	}
+		want := 30
+		if got := q.GetRear(); got != want {
+			t.Errorf("TestEnqueue expected %d, got %d", want, got)
+		}
+	})
+	t.Run("enqueue front is 10 in queue [10, 20, 30]", func(t *testing.T) {
+		q := MakeQueue()
+
+		q.Enqueue(10)
+		q.Enqueue(20)
+		q.Enqueue(30)
+
+		want := 10
+		if got := q.GetFront(); got != want {
+			t.Errorf("TestEnqueue expected %d, got %d", want, got)
+		}
+	})
 }
 
 func TestDequeue(t *testing.T) {
-	q := NewQueue(5)
-	q.Enqueue(10)
-	q.Enqueue(12)
-	q.Enqueue(14)
+	t.Run("dequeue item is 10 in queue [10, 20, 30]", func(t *testing.T) {
+		q := MakeQueue()
+		q.Enqueue(10)
+		q.Enqueue(20)
+		q.Enqueue(30)
 
-	want := 10
-	if got, _:=q.Dequeue(); got!=want {
-		t.Errorf("q.Dequeue()=%d, expected %d", got, want)
-	}
-}
+		item, _ := q.Dequeue()
 
-func TestDequeueError(t *testing.T) {
-	q := NewQueue(5)
-	q.Enqueue(10)
-	q.Enqueue(12)
-	q.Enqueue(14)
+		want := 10
+		if item != want {
+			t.Errorf("TestDequeue expected %d, got %d", want, item)
+		}
+	})
+	t.Run("after dequeue front is 20 in queue [10, 20, 30]", func(t *testing.T) {
+		q := MakeQueue()
+		q.Enqueue(10)
+		q.Enqueue(20)
+		q.Enqueue(30)
 
-	q.Dequeue()
-	q.Dequeue()
-	q.Dequeue()
+		q.Dequeue()
 
-	want := false
-	if _, got:=q.Dequeue(); got!=want {
-		t.Errorf("q.Dequeue()=_, %t, expected %t", got, want)
-	}
+		want := 20
+		if got := q.GetFront(); got != want {
+			t.Errorf("TestDequeue expected %d, got %d", want, got)
+		}
+	})
+	t.Run("dequeue empty in queue [10]", func(t *testing.T) {
+		q := MakeQueue()
+		q.Enqueue(10)
+
+		q.Dequeue()
+
+		if got := q.GetFront(); got != nil {
+			t.Errorf("TestDequeue expected nil, got %d", got)
+		}
+	})
 }

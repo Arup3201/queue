@@ -1,60 +1,66 @@
 package queue
 
-type Queue struct {
-	Front int
-	Rear int
-	Max int
-	Items []int
+import "sync"
+
+type elementType any
+
+type queue struct {
+	front, rear int
+	items       []elementType
+	rwLock      sync.RWMutex
 }
 
-func NewQueue(m int) *Queue {
-	return &Queue{
-		Front: -1,
-		Rear: -1, 
-		Max: m, 
-		Items: make([]int, m),
+func MakeQueue() *queue {
+	return &queue{
+		front: -1,
+		rear:  -1,
+		items: make([]elementType, 0),
 	}
 }
 
-func (q *Queue) IsEmpty() bool {
-	return q.Front == -1
-}
+func (q *queue) Enqueue(item elementType) {
+	q.rwLock.Lock()
+	defer q.rwLock.Unlock()
 
-func (q *Queue) GetRear() (int, bool) {
-	if q.IsEmpty() {
-		return -1, false
-	}
-
-	return q.Items[q.Rear], true
-}
-
-func (q *Queue) Enqueue(item int) {
-	if q.IsEmpty() {
-		q.Front=0
-		q.Rear=0
+	if q.rear == -1 {
+		q.front = 0
+		q.rear = 0
 	} else {
-		q.Rear += 1
+		q.rear += 1
 	}
 
-	if q.Rear==q.Max {
-		panic("reached the maximum capacity of the queue")
-	}
-
-	q.Items[q.Rear] = item
+	q.items = append(q.items, item)
 }
 
-func (q *Queue) Dequeue() (int, bool) {
-	if q.IsEmpty() {
-		return -1, false
-	}
+func (q *queue) Dequeue() (elementType, bool) {
+	q.rwLock.Lock()
+	defer q.rwLock.Unlock()
 
-	item := q.Items[q.Front]
-	if q.Front==q.Rear {
-		q.Front=-1
-		q.Rear=-1
-	} else {
-		q.Front += 1
+	switch q.front {
+	case -1:
+		return nil, false
+	case q.rear:
+		item := q.items[q.front]
+		q.front = -1
+		q.rear = -1
+		return item, true
+	default:
+		item := q.items[q.front]
+		q.front++
+		return item, true
 	}
+}
 
-	return item, true
+func (q *queue) GetFront() elementType {
+	if q.front == -1 {
+		return nil
+	}
+	return q.items[q.front]
+}
+
+func (q *queue) GetRear() elementType {
+	if q.rear == -1 {
+		return nil
+	}
+	return q.items[q.rear]
 }
