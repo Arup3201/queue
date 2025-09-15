@@ -1,12 +1,16 @@
 # Queue
 
-Queue data structure 
+Queue data structure using slice (thread-safe)
 
 ```go
-type Queue struct {
-	Front int
-	Rear int
-	Max int
-	Items []int
+type queue struct {
+	front, rear int
+	items       []elementType
+	rwLock      sync.RWMutex
 }
+```
+
+Here `elementType` is `any` type in golang.
+```go
+type elementType any
 ```
